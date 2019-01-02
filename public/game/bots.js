@@ -17,8 +17,8 @@ class BotSkeleton {
     this.compare = function(obj1, obj2) {
       return (obj1.x === obj2.x && obj1.y === obj2.y);
     };
-    this.w = C.WIDTH || 10;
-    this.h = C.HEIGHT || 10;
+    this.w = C.WIDTH || C.width || 10;
+    this.h = C.HEIGHT ||C.width || 10;
   }
 
   updateCells(eff, coord) {
@@ -122,8 +122,7 @@ class FinishBot extends BotSkeleton{
       sides.push(this.has(-1, 0)); // left
       sides.push(this.has(0, 1)); // down
       sides.push(this.has(0, -1)); // up
-
-      console.log('Sides: ' + JSON.stringify(sides));
+      
 
       let cross = null;
       let empties = [];
@@ -146,9 +145,6 @@ class FinishBot extends BotSkeleton{
         }
       }
 
-      console.log('Empties: ' + JSON.stringify(empties));
-      console.log('Cross: ' + JSON.stringify(cross));
-
       let rand = () => {
         let p;
         if (this.lasthit.length > 1) {
@@ -161,11 +157,6 @@ class FinishBot extends BotSkeleton{
 
         if (p.length === 0) {
           _.reverse(this.lasthit);
-          this.y++;
-          if (this.y > 40) return;
-          console.log(this.lasthit);
-          console.log('Trying again with ');
-          console.log(this.lasthit);
           this.act();
 
           return true;
@@ -173,25 +164,20 @@ class FinishBot extends BotSkeleton{
 
         let index = Math.floor(Math.random() * p.length);
         coord = p[index];
-        console.log('Shooting to the ' + JSON.stringify(coord));
       }
 
       if (cross !== null) {
         if (cross === 0 && empties[1]) {
           coord = empties[1];
-          console.log('Shooting to the left');
         }
         else if (cross === 1 && empties[0]) {
           coord = empties[0];
-          console.log('Shooting to the right');
         }
         else if (cross === 2 && empties[3]) {
           coord = empties[3];
-          console.log('Shooting to the top');
         }
         else if(cross === 3 && empties[2]) {
           coord = empties[2];
-          console.log('Shooting to the bottom');
         }
         else {
           if (rand()) return;

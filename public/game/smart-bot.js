@@ -3,13 +3,16 @@ class SmartBot extends BotSkeleton {
   constructor(C) {
     super(C);
     this.C = Object.assign({}, C);
-    this.brain = new NeuralNetwork([100, 30, 30, 30, 100]);
+    this.brain = new NeuralNetwork([this.w * this.h, 10, 10, this.w * this.h]);
     this.score = 0;
     this.name = C.name || randName(' ');
     if (!C.name) {
       this.C.name = this.name;
     }
     this.id = C.id || 0;
+
+    this.shoots = 0;
+    this.lasts = [];
   }
 
   think() {
@@ -35,9 +38,26 @@ class SmartBot extends BotSkeleton {
       return;
     }
 
+    this.shoots++;
+
     let coord = this.think();
 
     let eff = this.fun(coord.x, coord.y, MARK);
+
+    // punish bots fore shooting the same cell
+    for (let k of Object.keys(this.lasts)) {
+      this.lasts[k]++;
+      this.score += 0.05;
+    }
+
+    let key = `${coord.x}.${coord.y}`;
+    if (!this.lasts[key] || this.lasts[key] > 5) {
+      this.lasts[key] = eff === 'error' ? 1 : 3;
+    } else {
+      this.score -= 0.5;
+      this.lasts[key] = 1;
+    }
+
 
     if (eff !== 'error') {
       this.updateCells(eff, coord);
@@ -50,7 +70,7 @@ class SmartBot extends BotSkeleton {
   updateScore(eff) {
     if (eff === 'error') {
       this.stuck = true;
-      this.score -= Math.random();
+      this.score -= Math.random() / 50;
       return;
     }
 
@@ -84,8 +104,7 @@ class SmartBot extends BotSkeleton {
   }
 
 
-
-  mutate() {
+  crossover(partner) {
 
     function f(x) {
       if (Math.random() < MUTATION_RATE) {
@@ -93,59 +112,40 @@ class SmartBot extends BotSkeleton {
         for (let i = 0; i < 6; i ++) {
           offset += Math.random();
         }
-        offset /= 3;
+        offset /= 6;
 
         return x + offset;
       }
       return x;
     }
 
-    let mapping = e => {
-      let x = e.dataSync().map(f);
-      let shape = e.shape;
-      e.dispose();
-      return tf.tensor(x, e.shape);
-    }
-
-    this.brain.weights = this.brain.weights.map(mapping);
-    this.brain.biases = this.brain.biases.map(mapping);
-
-    // let i_weights = this.brain.input_weights.dataSync().map(f);
-    // this.brain.input_weights.dispose();
-    // this.brain.input_weights = tf.tensor(i_weights, [this.brain.input_nodes, this.brain.hidden_nodes]);
-    //
-    //
-    // let o_weights = this.brain.output_weights.dataSync().map(f);
-    // this.brain.output_weights.dispose();
-    // this.brain.output_weights = tf.tensor(o_weights, [this.brain.hidden_nodes, this.brain.output_nodes]);
-    //
-    //
-    // let i_bias = this.brain.input_bias.dataSync().map(f);
-    // this.brain.input_bias.dispose();
-    // this.brain.input_bias = tf.tensor(i_bias, [1, this.brain.hidden_nodes]);
-    //
-    //
-    // let o_bias = this.brain.output_bias.dataSync().map(f);
-    // this.brain.output_bias.dispose();
-    // this.brain.output_bias = tf.tensor(o_bias, [1, this.brain.output_nodes]);
-
-  }
-
-
-  crossover(partner) {
-
     // perform crossover on all the biases or all the weights of the two parents
     // A is the first parent's weights/biases
     // B is the second parent's weights/biases
+    // And mutate them
     function crossOne(A, B) {
       let arr = []
       for (let i = 0; i < A.length; i++) {
 
+        // get tensors into arrays
         let a = A[i].dataSync();
         let b = B[i].dataSync();
 
-        let mid = Math.floor(Math.random() * a.length);
-        let vals = [...a.slice(0, mid), ...b.slice(mid)];
+
+        // choose values randomly
+        let r = Math.random();
+
+        let vals = [];
+        for (let i = 0; i < a.length; i++) {
+          if (Math.random() > r) {
+            vals.push(a[i])
+          } else {
+            vals.push(b[i])
+          }
+        }
+
+        // mutate
+        vals = vals.map(f)
 
         let shape = A[i].shape;
 
@@ -168,10 +168,12 @@ class SmartBot extends BotSkeleton {
   }
 
 
-  reset(cells) {
+  reset(cells, fun) {
     this.lasthit = [];
-    this.score = 0;
     this.cells = _.cloneDeep(cells);
+    this.win = false;
+    this.stuck = false;
+    this.fun = fun;
   }
 
 

@@ -3,7 +3,8 @@ const EMPTY = 0
 GAP = 1
 SHIP = 2
 MARK = 3
-DIM = 4;
+DIM = 4
+GAPSHOT = 5;
 
  //   _____ _    _ _____ _____     _____ _                _____ _____
  //  / ____| |  | |_   _|  __ \   / ____| |        /\    / ____/ ____|
@@ -144,8 +145,8 @@ var bindConstants = function(p, C) {
   if (!p) p = {};
   if (!C) C = {};
 
-  p.WIDTH = C.WIDTH || 10;
-  p.HEIGHT = C.HEIGHT || 10;
+  p.WIDTH = C.WIDTH || C.width || 10;
+  p.HEIGHT = C.HEIGHT || C.height || 10;
 
   p.type = C.type || 'hidden'; // hidden or visible (mine or enemy)
   p.handleClick = C.click || function() {};
@@ -193,12 +194,6 @@ var bindConstants = function(p, C) {
       }
     }
 
-    p.SILH = C.silh !== undefined ? C.silh :
-            C.SILH !== undefined ? C.SILH :
-            C.silhouette !== undefined ? C.silhouette : true;
-
-    p.CURSOR = C.cursor !== undefined ? C.cursor :
-      C.CURSOR !== undefined ? C.CURSOR : true;
   }
   return p;
 }
@@ -556,6 +551,13 @@ var bindLogic = function(p, C) {
       for (let g of p.gaps) {
         if (g.x === x && g.y === y) {
           notHitYet = false; // it did
+
+          // when bot is the shooter, save the tile shot, but change its color
+          if (g.type !== MARK) {
+            g.type = GAPSHOT;
+
+          }
+
         }
       }
 
@@ -568,6 +570,7 @@ var bindLogic = function(p, C) {
           win: false
         }
       }
+
 
       return 'error';
     }

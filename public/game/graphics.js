@@ -25,6 +25,13 @@ var sketch = function(C) { // myboard indicates if it is your board or your oppo
       if (!C.logic) bindLogic(p, C);
       else _.assign(p, C.logic);
 
+      p.SILH = C.silh !== undefined ? C.silh :
+              C.SILH !== undefined ? C.SILH :
+              C.silhouette !== undefined ? C.silhouette : true;
+
+      p.CURSOR = C.cursor !== undefined ? C.cursor :
+        C.CURSOR !== undefined ? C.CURSOR : true;
+
       p.setConsts = function(C) {
         SIZE = C.SIZE || C.size || 35;
         STROKE = C.STROKE || C.stroke || 1;
@@ -150,7 +157,7 @@ var sketch = function(C) { // myboard indicates if it is your board or your oppo
               break;
 
             case MARK:
-              p.fill(200, 168, 52);
+              p.fill(12, 105, 12);
               break;
 
             case DIM:
@@ -159,6 +166,10 @@ var sketch = function(C) { // myboard indicates if it is your board or your oppo
 
             case undefined:
               p.fill(214, 108, 74, 90);
+              break;
+
+            case GAPSHOT:
+              p.fill(188, 99, 230);
               break;
           }
 
