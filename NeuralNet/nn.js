@@ -207,7 +207,7 @@ class NeuralNetwork {
             as[wl - 1].reshape( [as[wl - 1].shape[1]] ),
             delta     .reshape( [delta.shape[1]]      )))
 
-          // normalization derivative
+          // regularization derivative
           .add(this.weights[wl - 1].mul(lambda));
 
 
@@ -225,7 +225,7 @@ class NeuralNetwork {
             tf.outerProduct(
               as[j].reshape( [as[j].shape[1]] ),
               delta.reshape( [delta.shape[1]] )))
-              // normalize
+              // regularize
             .add(this.weights[j].mul(lambda));
 
         }
