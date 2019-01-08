@@ -5,9 +5,9 @@ class BotSkeleton {
 
     if (this.cells.length === 0) {
       for (let i = 0; i < C.WIDTH; i++) {
-        this.cells.push([])
+        this.cells[i] = [];
         for (let j = 0; j < C.HEIGHT; j++) {
-          this.cells[i].push(EMPTY);
+          this.cells[i][j] = EMPTY;
         }
       }
     }
@@ -17,8 +17,8 @@ class BotSkeleton {
     this.compare = function(obj1, obj2) {
       return (obj1.x === obj2.x && obj1.y === obj2.y);
     };
-    this.w = C.WIDTH || C.width || 10;
-    this.h = C.HEIGHT ||C.width || 10;
+    this.w = C.WIDTH || 10;
+    this.h = C.HEIGHT || 10;
   }
 
   updateCells(eff, coord) {
@@ -122,7 +122,7 @@ class FinishBot extends BotSkeleton{
       sides.push(this.has(-1, 0)); // left
       sides.push(this.has(0, 1)); // down
       sides.push(this.has(0, -1)); // up
-      
+
 
       let cross = null;
       let empties = [];
@@ -152,12 +152,9 @@ class FinishBot extends BotSkeleton{
         }
         else p = empties.filter(e => e !== null);
 
-        console.log(empties);
-        console.log(cross);
 
         if (p.length === 0) {
           _.reverse(this.lasthit);
-          this.act();
 
           return true;
         }

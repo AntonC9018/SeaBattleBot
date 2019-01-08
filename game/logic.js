@@ -4,7 +4,8 @@ GAP = 1
 SHIP = 2
 MARK = 3
 DIM = 4
-GAPSHOT = 5;
+GAPSHOT = 5
+RED = 6;
 
  //   _____ _    _ _____ _____     _____ _                _____ _____
  //  / ____| |  | |_   _|  __ \   / ____| |        /\    / ____/ ____|
@@ -39,7 +40,7 @@ class Ship {
     this.key = `${w}.${h}`;
   }
 
-  // check is mouse (any coordinate) is inside this ship
+  // Check is mouse (any coordinate) is inside this ship
   check(x, y, act) {
     for (let i of this.inds) {
       if (i.x === x && i.y === y) {
@@ -52,22 +53,22 @@ class Ship {
   }
 
 
-  // shoot the ship and respond with the effects
+  // Shoot the ship and respond with the effects
   shoot(x, y) {
 
-    // check if it shot the ship
+    // Check if it shot the ship
     if (this.check(x, y, true)) {
       return {
         hit: true,
 
-              // check if the shot killed the ship
+              // Check if the shot killed the ship
         kill:
           this.inds.reduce((a, b) => a || b.alive, false)
-            // add this ship if it did
+            // Add this ship if it did
             ? null : this
       };
     }
-    // it did not
+    // It did not
     else {
       return {
         hit: false,
@@ -153,9 +154,9 @@ var bindConstants = function(p, C) {
   p.win = C.win || function() {};
   p.lose = C.lose || function() {};
 
-  if (p.type === 'hidden' || p.type === 'both') {
+  if (p.type === 'hidden') {
 
-    // enemy board
+    // Enemy board
     p.cells = C.cells ||
       _.chunk(
         _.chunk(
@@ -163,15 +164,15 @@ var bindConstants = function(p, C) {
           p.HEIGHT),
         p.WIDTH)[0];
   }
-  if (p.type === 'visible'|| p.type === 'both') {
+  else if (p.type === 'visible') {
 
-    // my boards
+    // My board
     p.ships = C.ships || [];
     p.deadShips = C.deadShips || [];
     p.gaps = C.gaps || []; // shot empty spaces
     p.occupiedCells = C.occupiedCells || [];
 
-    // static schema
+    // Static schema
     p.SCHEMA = C.SCHEMA || {
       '4.1': 1,
       '3.1': 2,
@@ -179,7 +180,7 @@ var bindConstants = function(p, C) {
       '1.1': 4
     };
 
-    // dynamic schema. this will be changed as user adds new ships
+    // Dynamic schema. this will be changed as user adds new ships
     p.schema = C.schema || Object.assign({}, p.SCHEMA);
 
     p.ingame = C.ingame || false;
@@ -238,16 +239,16 @@ var bindLogic = function(p, C) {
       }
     }
 
-    // get outer shape cells of the ship
+    // Get outer shape cells of the ship
     let os = ship.outshape();
 
-    // check if an index would be off the screen
+    // Check if an index would be off the screen
     let x0 = ship.start.x > 0;
     let xw = ship.end.x < p.WIDTH - 1;
     let y0 = ship.start.y > 0;
     let yh = ship.end.y < p.HEIGHT - 1;
 
-    // left and right adjacent cells
+    // Left and Right adjacent cells
     if (x0) {
       shiftAll(os.lefts, -1, 0);
     }
@@ -261,7 +262,7 @@ var bindLogic = function(p, C) {
       shiftAll(os.rights, 1, 0);
     }
 
-    // diagonal adjacent cells
+    // Diagonal adjacent cells
     if (x0 && y0) {
       shish(os.corns[0], -1, -1); // left top corner
     }
@@ -288,8 +289,8 @@ var bindLogic = function(p, C) {
     return (obj1.x === obj2.x && obj1.y === obj2.y);
   }
 
-  // enemy board
-  if (p.type === 'hidden' || p.type === 'both') {
+  // Enemy board
+  if (p.type === 'hidden') {
 
     p.record = function(x, y, r) {
       if (r.hit) {
@@ -306,21 +307,21 @@ var bindLogic = function(p, C) {
       }
     }
 
-    // set a space to some type
+    // Set a space to some type
     p.set = function(x, y, type) {
       p.cells[x][y] = type;
     }
 
-    // finds out if the space is empty
+    // Finds out if the space is empty
     p.isEmpty = function(x, y) {
-      if (x > p.WIDTH || y > p.WIDTH || x < 0 || y < 0) {
+      if (x > p.WIDTH || y > p.HEIGHT || x < 0 || y < 0) {
         console.log('You\'re checking a cell that is off the screen');
         return false;
       }
       return p.cells[x][y] === 0;
     }
 
-    // turn cells around the ship into gaps
+    // Turn cells around the ship into gaps
     p.kill = function(cells) {
       for (let c of cells) {
         p.cells[c.x][c.y] = GAP;
@@ -328,15 +329,15 @@ var bindLogic = function(p, C) {
     }
 
 
-  // my board
   }
-  if (p.type === 'visible' || p.type === 'both') {
+  // My board
+  if (p.type === 'visible') {
 
-    // finds out if the space is empty
+    // Finds out if the space is empty
     p.isEmpty = function(x, y) {
       if (x > p.WIDTH || y > p.HEIGHT || x < 0 || y < 0) return false;
 
-      // check for ships
+      // Check for ships
       for (let ship of p.ships) {
         if (x >= ship.start.x && x <= ship.end.x &&
           y >= ship.start.y && y <= ship.end.y) {
@@ -344,7 +345,7 @@ var bindLogic = function(p, C) {
         }
       }
 
-      // check for dead ships
+      // Check for dead ships
       for (let ship of p.deadShips) {
         if (x >= ship.start.x && x <= ship.end.x &&
           y >= ship.start.y && y <= ship.end.y) {
@@ -352,7 +353,7 @@ var bindLogic = function(p, C) {
         }
       }
 
-      // check for gaps
+      // Check for gaps
       for (let gap of p.gaps) {
         if (x === gap.x && y === gap.y) {
           return false;
@@ -363,21 +364,21 @@ var bindLogic = function(p, C) {
     }
 
 
-    // ensure the start has the least coordinates and
+    // Ensure the start has the least coordinates and
     // the end has the greatest ones
     p.matchEnds = function(one, two) {
 
       let start = Object.assign({}, one)
       let end = Object.assign({}, two)
 
-      // check X coordinates (indeces)
+      // Check X coordinates (indeces)
       if (start.x > end.x) {
         let t = start.x;
         start.x = end.x;
         end.x = t;
       }
 
-      // check Y coordinates (indeces)
+      // Check Y coordinates (indeces)
       if (start.y > end.y) {
         let t = start.y;
         start.y = end.y;
@@ -391,7 +392,7 @@ var bindLogic = function(p, C) {
     }
 
 
-    // update dynamic schema after creating new ship
+    // Update dynamic schema after creating new ship
     p.updateSchema = function(ship) {
       if (p.SCHEMA === 'any' || p.debugging) {
         return;
@@ -409,7 +410,7 @@ var bindLogic = function(p, C) {
     }
 
 
-    // check if the ship can be created (if the game rules allow this)
+    // Check if the ship can be created (if the game rules allow this)
     p.meetCriteria = function(ship) {
 
       if (!p.shipSilhouette) return true;
@@ -438,12 +439,12 @@ var bindLogic = function(p, C) {
     }
 
 
-    // return new ship
+    // Return new ship
     p.createShip = function(start, end) {
       return new Ship(start, end);
     }
 
-    // just add an existing ship and update shema and such
+    // Just add an existing ship and update shema and such
     p._addShip = function(ship) {
 
       p.ships.push(ship);
@@ -452,10 +453,10 @@ var bindLogic = function(p, C) {
       let adj = p.calcAdjacent(ship);
 
       for (let i of ship.inds.concat(adj)) {
-        p.occupiedCells.push({ x: i.x, y: i.y });
+        p.occupiedCells.push({ x: i.x, y: i.y, type: RED });
       }
 
-      // update free cells
+      // Update free cells
       p.freeCells = p.freeCells.filter(cell => {
 
         for (let i of ship.inds.concat(adj)) {
@@ -469,60 +470,60 @@ var bindLogic = function(p, C) {
       ship.adj = adj;
       ship.span = ship.inds.length + adj.length;
 
-      // update schema
+      // Update schema
       p.updateSchema(ship);
     }
 
 
-    // create and add the ship to ships
+    // Create and add the ship to ships
     p.addShip = function(start, end) {
 
-      // create the actual ship
+      // Create the actual ship
       let ends = p.matchEnds(start, end);
       let newborn = p.createShip(ends.start, ends.end);
 
       p._addShip(newborn);
 
-      // return new ship
+      // Return new ship
       return newborn;
     }
 
 
-    // delete latest ship
+    // Delete latest ship
     p.undo = function() {
       if (p.ingame) return;
       if (p.ships.length === 0) return;
       let ship = p.ships.splice(-1, 1)[0];
-      // update occupied cells
+      // Update occupied cells
       p.occupiedCells.splice(-ship.span, ship.span);
       p.schema[ship.key]++;
     }
 
 
-    // destroy a ship
+    // Destroy a ship
     p.finish = function(ship) {
 
       let has = function(el) {
         for (let i = 0; i < p.gaps.length; i++) {
           if (p.compare(p.gaps[i], el)) {
-            return i;
+            return true;
           }
         }
-        return -1;
+        return false;
       }
 
-      // add cell to gaps if it's not already there
+      // Add cell to gaps if it's not already there
       for (let cell of ship.adj) {
-        if (has(cell) === -1) {
+        if (!has(cell)) {
           p.gaps.push(cell);
         }
       }
     }
 
-    // shoot a cell specified by coordinates
+    // Shoot a cell specified by coordinates
     p.shoot = function(x, y, type) {
 
-      // check if hit a ship
+      // Check if hit a ship
       for (let i = 0; i < p.ships.length; i++) {
 
         let eff = p.ships[i].shoot(x, y);
@@ -544,15 +545,15 @@ var bindLogic = function(p, C) {
         }
       }
 
-      // it did not hit any ships
+      // It did not hit any ships
       let notHitYet = true;
 
-      // check if hit a gap
+      // Check if hit a gap
       for (let g of p.gaps) {
         if (g.x === x && g.y === y) {
           notHitYet = false; // it did
 
-          // when bot is the shooter, save the tile shot, but change its color
+          // When bot is the shooter, record the cell being shot, but change its color
           if (g.type !== MARK) {
             g.type = GAPSHOT;
 
@@ -561,7 +562,7 @@ var bindLogic = function(p, C) {
         }
       }
 
-      // make the gap
+      // Make the gap
       if (notHitYet) {
         p.gaps.push({ x, y, type: type || GAP });
         return {
@@ -576,7 +577,7 @@ var bindLogic = function(p, C) {
     }
 
 
-    // return this board as hidden in form of a 'cells' 2d array
+    // Return this board as hidden in form of a 'cells' 2d array
     p.toCells = function() {
       let cells = _.chunk(_.fill(Array(p.WIDTH * p.HEIGHT), 0), p.HEIGHT);
       p.deadShips.forEach(
