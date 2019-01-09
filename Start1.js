@@ -5,13 +5,15 @@ var Height = 4;
 let navies;
 let count = 0;
 let loop = false;
-let NN = new NeuralNetwork([16, 30, 30, 16]);
+let NN = new NeuralNetwork([16, 30, 16]);
 
+let BATCH = 15;
 
-let LR = 0.01;
-let LAMBDA = 0.01;
-let BATCH = 40;
+let LR = 1 / BATCH;
+let LAMBDA = 0.01; // decay
 let EPOCHS = 20;
+
+let TESTS = 4;
 
 // Initialize the Neural Network
 NN.init();
@@ -43,20 +45,25 @@ async function clickk() {
 	holder.find('*').remove(); // delete earlier canvases
 
 	for (let i = 0; i < last.length; i++) {
-		let div = $('<div>');
-		navies.push(
-			createSketch({
-				logic: last[i],
-				type: 'visible',
-				size: 8,
-				silh: false,
-				cursor: false,
-				width: Width,
-				height: Height
-			}, div[0]))
+		let divofdivs = $('<div>').addClass('batch').appendTo(holder);
+		navies.push([])
 
-		div.appendTo(holder)
+		for (let j = 0; j < last[i].length; j++) {
+			let div = $('<div>').addClass('floaty').appendTo(divofdivs);
+			navies[i].push(
+				createSketch({
+					logic: last[i][j],
+					type: 'visible',
+					size: 8,
+					silh: false,
+					cursor: false,
+					width: Width,
+					height: Height
+				}, div[0]))
+		}
 	}
+
+
 
 	if (loop) {
 		setTimeout(clickk, 200);

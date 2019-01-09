@@ -18,7 +18,6 @@ var sketch = function(C) { // myboard indicates if it is your board or your oppo
       if (!C.logic) bindLogic(p, C);
       else _.assign(p, C.logic);
 
-      console.log(C);
 
       // Initialize some constants
       p.SIZE = C.SIZE || C.size || 35;

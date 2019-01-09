@@ -41,9 +41,6 @@ class NeuralNetwork {
       let first = ys.mul(ln_as);
       let second = one_minus_ys.mul(ln_one_minus_as);
       let allthree = first.add(second).neg().sum().dataSync()[0];
-      // console.log(allthree);
-      
-      // it is for some reason too small, I don't understand why and get discouraged
 
       // regularization factor (weights squared)
       let w_squared = 0;
@@ -70,6 +67,9 @@ class NeuralNetwork {
     for (let w of this.weights) {
       w.print()
     }
+    for (let b of this.biases) {
+      b.print()
+    }
   }
 
   // relu prime
@@ -94,7 +94,7 @@ class NeuralNetwork {
     for (let i = 0; i < input.length; i++) {
 
       // collect possible not-gap shots
-      if (input[i] === 1) good_inds.push(i);
+      if (input[i] === 0) good_inds.push(i);
 
       // collect strong guesses
       if (guess[i] > 0.5) highests.push(i);
@@ -127,7 +127,6 @@ class NeuralNetwork {
 
     }
 
-
     return tf.tensor(result, _guess.shape);
 
   }
@@ -135,7 +134,7 @@ class NeuralNetwork {
 
   // I'll use sigmoid in the last layer
   // learning in batches
-  grad_descent(xs, LR) {
+  grad_descent(xs) {
 
 
     tf.tidy(() => {
@@ -196,7 +195,7 @@ class NeuralNetwork {
 
         // output of (L - 1) layer * (label - output)
         let delta = x.sub(y);
-        grad_b[wl - 1] = grad_b[wl - 1].add(delta);
+        grad_b[wl - 1] = grad_b[wl - 1].add(delta).add(this.biases[wl - 1].mul(lambda));;
         grad_w[wl - 1] = grad_w[wl - 1].add(
 
           // this is my way to assemble the Jacobian
@@ -220,7 +219,7 @@ class NeuralNetwork {
           delta = delta.matMul(this.weights[j + 1].transpose()).mul(sp);
 
           // this had been described above
-          grad_b[j] = grad_b[j].add(delta);
+          grad_b[j] = grad_b[j].add(delta).add(this.biases[j].mul(lambda));;
           grad_w[j] = grad_w[j].add(
             tf.outerProduct(
               as[j].reshape( [as[j].shape[1]] ),
@@ -269,11 +268,12 @@ class NeuralNetwork {
 
     for (let i = 0; i < C.num_epochs; i++) {
 
-      console.log('Started interation # ' + i);
+      // console.log('Started interation # ' + i);
       let xs = [];
 
       // last epoch alert!
-      if (i === (C.num_epochs) - 1) last = [];
+      if (i === C.num_epochs - TESTS - 1) last = [];
+      if (i >= C.num_epochs - TESTS - 1) last.push([]);
 
 
       for (let j = 0; j < C.batch_size; j++) {
@@ -286,11 +286,11 @@ class NeuralNetwork {
         if (last) {
           let guess = indexOfMax(this.predict(xs[j]).dataSync());
           logic.shoot(Math.floor(guess / logic.HEIGHT), guess % logic.HEIGHT, MARK);
-          last[j] = logic;
+          last[last.length - 1][j] = logic;
         }
 
       }
-      console.log('Started optimizing');
+      // console.log('Started optimizing');
       this.grad_descent(xs, 0.1);
 
       // calculate loss for an arbitrary board
@@ -299,7 +299,7 @@ class NeuralNetwork {
       let guess = this.predict(_.flatten(cells));
       let label = this.generate_y(_.flatten(cells), guess);
       let loss = this.cross_entropy(guess, label);
-      console.log(loss);
+      console.log('Iteration ' + i, loss);
 
       await tf.nextFrame();
     }
