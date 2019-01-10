@@ -5,7 +5,7 @@ var Height = 4;
 let navies;
 let count = 0;
 let loop = false;
-let NN = new NeuralNetwork([16, 30, 16]);
+let NN = new NeuralNetwork([16, 20, 16]);
 
 let BATCH = 15;
 
@@ -14,6 +14,8 @@ let LAMBDA = 0.01; // decay
 let EPOCHS = 20;
 
 let TESTS = 4;
+
+let PERC = 15/16;
 
 // Initialize the Neural Network
 NN.init();
@@ -34,7 +36,7 @@ async function clickk() {
 			type: 'visible'
 		},
 
-		reveal: 15/16, // reveal all but 1 cell (for now)
+		reveal: PERC, // reveal all but 1 cell (for now)
 		batch_size: BATCH,
 		num_epochs: EPOCHS
 	})
@@ -54,7 +56,7 @@ async function clickk() {
 				createSketch({
 					logic: last[i][j],
 					type: 'visible',
-					size: 8,
+					size: 16,
 					silh: false,
 					cursor: false,
 					width: Width,

@@ -42,6 +42,7 @@ class NeuralNetwork {
       let second = one_minus_ys.mul(ln_one_minus_as);
       let allthree = first.add(second).neg().sum().dataSync()[0];
 
+
       // regularization factor (weights squared)
       let w_squared = 0;
 
@@ -50,7 +51,6 @@ class NeuralNetwork {
       }
       w_squared *= LAMBDA
 
-      // console.log(w_squared);
 
       // add the two up
       let result = allthree + w_squared;
@@ -141,7 +141,7 @@ class NeuralNetwork {
 
       let wl = this.weights.length; // shorthand
 
-      // sum of gradients w.r.t. the weights and the biases
+      // The future sums of gradients w.r.t. the weights and the biases
       let grad_w = [];
       let grad_b = [];
 
@@ -155,7 +155,7 @@ class NeuralNetwork {
       for (let i = 0; i < xs.length; i++) {
         let as = [];
 
-        // prepare input
+        // tensorize the input)
         let x = tf.tensor(xs[i], [1, this.nodes[0]]);
 
         as.push(x);
@@ -166,7 +166,7 @@ class NeuralNetwork {
           x = x.matMul(this.weights[j]).add(this.biases[j]);
 
 
-          // I won't use the relu function just now since the values
+          // I won't use the relu function just yet since the values
           // that the NN produces go huge and the output drawn through
           // a sigmoid becomes just 0-s or 1-s
           // The error because of that blasts off to infinity (NaNs)
@@ -205,6 +205,15 @@ class NeuralNetwork {
           tf.outerProduct(
             as[wl - 1].reshape( [as[wl - 1].shape[1]] ),
             delta     .reshape( [delta.shape[1]]      )))
+
+          // the other way to do this is:
+          //
+          //   as.[wl - 1].mul(
+          //     tf.eye(as.shape[1]))
+          //     .transpose()
+          //     .mul(delta)
+          //
+          // this yields exactly the same result
 
           // regularization derivative
           .add(this.weights[wl - 1].mul(lambda));
