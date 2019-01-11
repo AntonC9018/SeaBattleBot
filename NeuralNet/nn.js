@@ -63,6 +63,17 @@ class NeuralNetwork {
 
   }
 
+  avg_weight() {
+    let result = 0;
+
+    for (let w of this.weights) {
+      let vals = w.dataSync();
+      let sum = vals.reduce((b, c) => b + Math.abs(c));
+      result += sum / vals.length;
+    }
+    return result / this.weights.length;
+  }
+
   print() {
     for (let w of this.weights) {
       w.print()
@@ -109,6 +120,7 @@ class NeuralNetwork {
     }
 
     let result = _.fill(Array(input.length), 0);
+    good_inds.forEach(i => result[i] = 0.25);
 
     if (matches.length > 0) {
       let highest = matches[0];
@@ -132,8 +144,8 @@ class NeuralNetwork {
   }
 
 
-  // I'll use sigmoid in the last layer
-  // learning in batches
+  // I'll use sigmoid in the last layer stochactic gradient descent
+  // Learning in batches
   grad_descent(xs) {
 
 
@@ -239,14 +251,16 @@ class NeuralNetwork {
         }
       }
 
+      let lr = tf.scalar(LR / BATCH);
+
       // update the weights
       for (let i = 0; i < wl; i++) {
 
         this.weights[i].assign(
-          this.weights[i].sub(grad_w[i].mul(tf.scalar(LR))));
+          this.weights[i].sub(grad_w[i].mul(lr)));
 
         this.biases[i].assign(
-          this.biases[i].sub(grad_b[i].mul(tf.scalar(LR))));
+          this.biases[i].sub(grad_b[i].mul(lr)));
       }
 
     })
@@ -256,65 +270,97 @@ class NeuralNetwork {
   // start training
   async train(C) {
 
-    // I use the term 'epoch' not quite rights here
-    // It commonly refers to a full iteration over the whole dataset
-    // but I generate new data samples on the fly, while still using
-    // this term.
+      // I use the term 'epoch' not quite rights here
+      // It commonly refers to a full iteration over the whole dataset
+      // but I generate new data samples on the fly, while still using
+      // this term.
 
-    // I may be wrong and it's used that way
+      // I may be wrong and it's used that way
 
-    // C {
-    //
-    //  board: * params for board *
-    //  reveal: * percentage to reveal *
-    //  batch_size:
-    //  num_epochs:
-    //
-    // }
+      // C {
+      //
+      //  board: * params for board *
+      //  reveal: * percentage to reveal *
+      //  batch_size:
+      //  num_epochs:
+      //
+      // }
 
-    // variable to hold the last epoch's
-    let last = null;
+      for (let i = 0; i < EPOCHS; i++) {
+        tf.tidy(() => {
 
-    for (let i = 0; i < C.num_epochs; i++) {
-
-      // console.log('Started interation # ' + i);
-      let xs = [];
-
-      // last epoch alert!
-      if (i === C.num_epochs - TESTS - 1) last = [];
-      if (i >= C.num_epochs - TESTS - 1) last.push([]);
+          // console.log('Started interation # ' + i);
+          let xs = [];
 
 
-      for (let j = 0; j < C.batch_size; j++) {
+          for (let j = 0; j < BATCH; j++) {
 
-        // create a data sample
-        let logic = createLogic(C.board);
-        let cells = reveal(logic, C.reveal);
-        xs[j] = _.flatten(cells);
+            // create a data sample
+            let logic = createLogic({
+        			WIDTH,
+        			HEIGHT,
+        			type: 'visible'
+        		});
+            let cells = reveal(logic, PERC);
+            xs[j] = _.flatten(cells);
+          }
 
-        if (last) {
-          let guess = indexOfMax(this.predict(xs[j]).dataSync());
-          logic.shoot(Math.floor(guess / logic.HEIGHT), guess % logic.HEIGHT, MARK);
-          last[last.length - 1][j] = logic;
-        }
+          // console.log('Started optimizing');
+          this.grad_descent(xs, 0.1);
 
+          console.log('Iteration ' + i);
+        });
+
+        await tf.nextFrame();
       }
-      // console.log('Started optimizing');
-      this.grad_descent(xs, 0.1);
 
-      // calculate loss for an arbitrary board
-      let logic = createLogic(C.board);
-      let cells = reveal(logic, C.reveal);
-      let guess = this.predict(_.flatten(cells));
-      let label = this.generate_y(_.flatten(cells), guess);
-      let loss = this.cross_entropy(guess, label);
-      console.log('Iteration ' + i, loss);
+      // variable to hold the test epochs
+      let lasts = [];
+      let stats = [];
 
-      await tf.nextFrame();
-    }
+      for (let i = 0; i < TESTS; i++) {
 
-    // console.log(last);
-    return last;
+        lasts[i] = [];
+        let loss_accum = 0;
+        let res_accum = 0;
+
+        for (let j = 0; j < BATCH; j++) {
+
+          tf.tidy(() => {
+            let logic = createLogic({
+        			WIDTH,
+        			HEIGHT,
+        			type: 'visible'
+        		});
+            let cells = _.flatten(reveal(logic, PERC));
+            let guess = this.predict(cells);
+
+            let guess_num = indexOfMax(guess.dataSync());
+            let result = logic.shoot(Math.floor(guess_num / HEIGHT), guess_num % HEIGHT, MARK);
+
+            let label = this.generate_y(cells, guess);
+            let loss = this.cross_entropy(guess, label);
+
+            loss_accum += loss;
+            if (result !== 'error') {
+              res_accum += 1;
+            }
+
+            lasts[i].push({ logic, loss, result })
+          })
+        }
+        stats[i] = {
+          avg_loss: loss_accum / BATCH,
+          accuracy: res_accum / BATCH
+        }
+      }
+      let avg = {
+        avg_loss: _.sumBy(stats, 'avg_loss') / TESTS,
+        accuracy: _.sumBy(stats, 'accuracy') / TESTS
+      }
+
+      return { lasts, stats, avg };
+
   }
 
 
@@ -347,18 +393,9 @@ class NeuralNetwork {
     });
 
   }
-
-  clone() {
-    let clonie = new NeuralNetwork(this.nodes);
-    clonie.set(this);
-    return clonie;
-  }
-
-
   dispose() {
     _.each(this.weights, e => e.dispose());
     _.each(this.biases, e => e.dispose());
   }
-
 
 }

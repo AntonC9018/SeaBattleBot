@@ -37,6 +37,12 @@ var sketch = function(C) { // myboard indicates if it is your board or your oppo
         C.CURSOR !== undefined ? C.CURSOR : true;
 
 
+
+      p.ODD = Math.round(p.STROKE) % 2 === 1;
+
+      if (!C.redraw) p.noLoop();
+
+
       p.drawGrid = function() {
         p.background(255);
         p.noFill();
@@ -95,7 +101,14 @@ var sketch = function(C) { // myboard indicates if it is your board or your oppo
         }
 
         p.noStroke();
-        p.rect(x * p.SIZE + p.STROKE, y * p.SIZE + p.STROKE, p.SIZE - p.STROKE, p.SIZE - p.STROKE);
+
+        // I can't figure out a reason for this but if the stroke weight is set to
+        // an odd value, then adding the full stroke weight to the starting coordinates
+        // makes it placed right and not shifted down by a pixel and this number
+        // is half of that for a board whose stroke weight is even.
+        p.rect(x * p.SIZE + (p.ODD ? p.STROKE : p.STROKE / 2),
+          y * p.SIZE + (p.ODD ? p.STROKE : p.STROKE / 2),
+          p.SIZE - p.STROKE, p.SIZE - p.STROKE);
       }
 
 

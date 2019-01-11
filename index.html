@@ -2,49 +2,95 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <title></title>
+    <title>Bot shoots at cells</title>
     <style>
-      .h {
-        font-size: 30px;
-        font-weight: bold;
-      }
 
-      ul {
-        list-style-type: decimal;
-      }
-
-      canvas {
-        margin: 4px;
-      }
-      div.floaty {
-        float: left
-      }
-      div.batch {
-        padding: 15px;
-      }
-      #navy {
-        display: inline-block;
-      }
     </style>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/range.css">
+    <link rel="stylesheet" href="css/btns.css">
 
   </head>
   <body>
+    <div class="stuff">
+      <div id="chartContainer"></div>
+      <div class="ranges">
+
+        Learning rate = <span contenteditable="true" class="lr var"></span>
+        <input class="wigwig lr" type="range" min="0.00001" max="0.75" step="0.00001">
+        <a href="#" class="lr btn-gradient green mini halve">Halve!</a><br>
+
+        Lambda = <span contenteditable="true" class="lm var"></span>
+        <input class="wigwig lm" type="range" min="0.000001" max="0.1" step="0.000001">
+        <a href="#" class="lm btn-gradient green mini halve">Halve!</a><br>
+
+        Batch size = <span contenteditable="true" class="bs var"></span>
+        <input class="wigwig bs" type="range" min="1" max="50" step="1"><br>
+
+        Num of epochs = <span contenteditable="true" class="ep var"></span>
+        <input class="wigwig ep" type="range" min="1" max="50" step="1"><br>
+
+        Test size = <span contenteditable="true" class="ts var"></span>
+        <input class="wigwig ts" type="range" min="1" max="10" step="1"><br>
+
+      </div>
+      <div class="avgs">
+        <ul class="avgs">
+          <li class="iters">Iteration: <span class="dyn" >0</span></li>
+          <li class="weight">Average weight size: <span class="dyn">0</span></li>
+          <li class="highscore">Highscore: <span class="dyn" >0</span>%</li>
+          <li class="loss">Average loss: <span class="dyn" >0</span></li>
+          <li class="shot">Shot <span class="dyn" >0</span> times.</li>
+        </ul>
+      </div>
+
+    </div>
+    <div class="buttons">
+      <a href="#" onclick="clickk()" class="btn-gradient red small">Evolve</a>
+      <!-- <button >Evolve</button> -->
+      <input type="checkbox" onclick="toggleLoop()">Loop<br>
+      <a href="#" onclick="showInit()" class="btn-gradient blue small">Reinitialize</a>
+
+    </div>
+
+    <div class="init">
+      <form>
+        <label for="fname">Width</label>
+        <input type="text" class="width" placeholder="8">
+
+        <label for="lname">Height</label>
+        <input type="text" class="height" placeholder="8">
+
+        <label for="country">Number of hidden neurons:</label>
+        <input type="text" class="n-hidden" placeholder="30">
+
+
+        <a href="#" onclick="init()" class="btn-gradient green large">Go!</a>
+
+      </form>
+    </div>
+
     <!-- <button onclick="javascript:request()">Load</button> -->
     <div id="navy"></div>
-    <div id="geners"></div>
+
+
+    <!-- <div id="geners"></div>
     <div id="high-score"></div>
     <div id="avg-score"></div>
     <div id="population"></div>
     <div id="mut-rate"></div>
-    <div id="progress"></div>
-    <button onclick="clickk()">Evolve</button>
-    <input type="checkbox" onclick="toggleLoop()" value="ToggleLoop">
-    <br>
+    <div id="progress"></div> -->
+    <!-- <br>
     <ul>
       <div class="h"></div>
 
-    </ul>
+    </ul> -->
   </body>
+
+
+  <script src="lib/rainbow.js"></script>
+  <script src="lib/canvasjs.min.js"></script>
+
   <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.14.1/dist/tf.min.js"></script> -->
   <script src="lib/lodash.min.js"></script>
   <script src="lib/RandomNick.js"></script>
