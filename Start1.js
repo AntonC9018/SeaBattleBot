@@ -199,6 +199,8 @@ function _init(i) {
 	$('#navy').find('*').remove(); // delete earlier canvases
 
 	I = 0;
+	shots = 0;
+	best = 0;
 
 	$('li.iters span')		.html(0);
 	$('li.weight span')		.html(0);
