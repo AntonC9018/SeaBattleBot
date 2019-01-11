@@ -102,11 +102,13 @@ function createChart() {
 
 		axisX: {
 			minimum: 0,
-			minnterval: 1
+			minnterval: 1,
+			title: 'Iteration'
 		},
 
 		axisY: {
-			suffix: '%'
+			suffix: '%',
+			title: 'Accuracy'
 		},
 
 		width: 600,
