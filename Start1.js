@@ -1,6 +1,8 @@
 var WIDTH = 8;
 var HEIGHT = 8;
 
+let SIZE = Math.floor(60 / 8);
+let STROKE = 1;
 
 let navies;
 let count = 0;
@@ -47,7 +49,7 @@ async function clickk() {
 	for (let i = 0; i < TESTS; i++) {
 
 		let divofdivs = $('<div>').addClass('batch').appendTo(holder);
-		let text = $('<div>').html(stats.stats[i].accuracy * 100 + '%').addClass('texty').appendTo(divofdivs);
+		let text = $('<div>').html((stats.stats[i].accuracy * 100).toFixed(2) + '%').addClass('texty').appendTo(divofdivs);
 
 		navies.push([])
 
@@ -58,8 +60,8 @@ async function clickk() {
 				createSketch({
 					logic: stats.lasts[i][j].logic,
 					type: 'visible',
-					size: 5,
-					stroke: 1,
+					size: SIZE,
+					stroke: STROKE,
 
 					silh: false,
 					cursor: false,
@@ -143,8 +145,8 @@ $(document).ready(function() {
 	$('span.ep').html(EPOCHS)	.on('mouseout', function() { EPOCHS = 	parseFloat($(this).html()) })
 	$('span.ts').html(TESTS)	.on('mouseout', function() { TESTS = 		parseFloat($(this).html()) })
 
-	$('a.lr').on('click', function() { LR /= 2;			$('input.lr').val(LR);		 $('span.lr').html(LR.toFixed(8))	     })
-	$('a.lm').on('click', function() { LAMBDA /= 2;	$('input.lm').val(LAMBDA); $('span.lm').html(LAMBDA.toFixed(8))  })
+	$('a.lr').on('click', function() { LR /= 2;			$('input.lr').val(LR);		 $('span.lr').html(LR.toFixed(6))	     })
+	$('a.lm').on('click', function() { LAMBDA /= 2;	$('input.lm').val(LAMBDA); $('span.lm').html(LAMBDA.toFixed(6))  })
 
 	// $('span.var').on('focus', function() { $(this).select() }).mouseup(function(e) { e.preventDefault() })
 
@@ -178,6 +180,8 @@ function init() {
 	$('.init').hide('medium');
 	WIDTH = parseInt($('.width').val()) || 8;
 	HEIGHT = parseInt($('.height').val()) || 8;
+	SIZE = Math.floor(60 / WIDTH);
+	STROKE = (WIDTH > 6 || HEIGHT > 6) ? 1 : 2;
 	let num_hidden = parseInt($('.n-hidden').val()) || 30;
 	_init(num_hidden);
 }

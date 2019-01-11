@@ -3,6 +3,10 @@
   font-weight: bold;
 }
 
+body {
+  padding: 5px;
+}
+
 canvas {
   margin: 4px;
 }
