@@ -8,7 +8,6 @@ let DP = 25;
 let navies;
 let count = 0;
 let loop = false;
-let NN;
 
 let I = 1;
 let shots = 0;
@@ -17,7 +16,7 @@ let best = 0;
 let BATCH = 15;
 // let BATCH = 1 ;
 
-let LR = 0.5; // learning rate
+let LR = 0.1; // learning rate
 let LAMBDA = 0.01; // decay (regularization parameter)
 // let EPOCHS = 20;
 
@@ -30,7 +29,8 @@ let PERC = 0.9; // percentage of cells to reveal
 // Initialize the Neural Network
 // NN.init();
 
-let MU = 0.8;
+// let MU = 0.8;
+let NN = createModel(30);
 
 function toggleLoop() {
 	loop = !loop;
@@ -130,7 +130,8 @@ function createChart() {
 }
 
 $(document).ready(function() {
-	_init(30);
+	// _init(30);
+	createChart()
 
 	$('input').filter('.lr,.lm,.bs,.ep,.ts,.dp')
 		.on('input', function() {
