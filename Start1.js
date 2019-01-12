@@ -26,6 +26,8 @@ let TESTS = 5; // how many batches will be shown at the end of an epoch
 
 let PERC = 0.9; // percentage of cells to reveal
 
+let DP = 25;
+
 // Initialize the Neural Network
 NN.init();
 
@@ -127,7 +129,8 @@ function createChart() {
 }
 
 $(document).ready(function() {
-	_init(30);
+	// _init(30);
+	createChart();
 
 	$('input').filter('.lr,.lm,.bs,.ep,.ts,.dp')
 		.on('input', function() {
