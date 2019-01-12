@@ -7,6 +7,8 @@ class NeuralNetwork {
     this.nodes = nodes;
     this.weights = [];
     this.biases = [];
+    this.weight_momentums = [];
+    this.bias_momentums = [];
     this.err = null;
 
   }
@@ -18,12 +20,20 @@ class NeuralNetwork {
       this.weights.push(
         tf.variable(
           tf.randomNormal(
-            [this.nodes[i], this.nodes[i + 1]])))
+            [this.nodes[i], this.nodes[i + 1]]))) //, 0, 1 / this.nodes[i]))
 
       this.biases.push(
         tf.variable(
           tf.randomNormal(
             [ 1, this.nodes[i + 1] ])))
+
+      this.weight_momentums.push(
+        tf.variable(
+          tf.zeros(this.weights[i].shape)))
+
+      this.bias_momentums.push(
+        tf.variable(
+          tf.zeros(this.biases[i].shape)))
     }
 
   }
@@ -120,7 +130,7 @@ class NeuralNetwork {
     }
 
     let result = _.fill(Array(input.length), 0);
-    good_inds.forEach(i => result[i] = 0.25);
+    good_inds.forEach(i => result[i] = 0.1);
 
     if (matches.length > 0) {
       let highest = matches[0];
@@ -252,15 +262,25 @@ class NeuralNetwork {
       }
 
       let lr = tf.scalar(LR / BATCH);
+      let mu = tf.scalar(MU);
 
-      // update the weights
       for (let i = 0; i < wl; i++) {
 
+        // update the momentums
+        this.weight_momentums[i].assign(
+          this.weight_momentums[i].mul(mu).add(grad_w[i].mul(lr))
+        )
+
+        this.bias_momentums[i].assign(
+          this.bias_momentums[i].mul(mu).add(grad_b[i].mul(lr))
+        )
+
+        // update the weights and the biases
         this.weights[i].assign(
-          this.weights[i].sub(grad_w[i].mul(lr)));
+          this.weights[i].sub(this.weight_momentums[i]));
 
         this.biases[i].assign(
-          this.biases[i].sub(grad_b[i].mul(lr)));
+          this.biases[i].sub(this.bias_momentums[i]));
       }
 
     })

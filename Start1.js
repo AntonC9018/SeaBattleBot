@@ -3,11 +3,12 @@ var HEIGHT = 8;
 
 let SIZE = Math.floor(60 / 8);
 let STROKE = 1;
+let DP = 25;
 
 let navies;
 let count = 0;
 let loop = false;
-let NN = new NeuralNetwork([WIDTH * HEIGHT, 30, WIDTH * HEIGHT]);
+let NN;
 
 let I = 1;
 let shots = 0;
@@ -27,7 +28,9 @@ let TESTS = 5; // how many batches will be shown at the end of an epoch
 let PERC = 0.9; // percentage of cells to reveal
 
 // Initialize the Neural Network
-NN.init();
+// NN.init();
+
+let MU = 0.8;
 
 function toggleLoop() {
 	loop = !loop;
@@ -200,7 +203,7 @@ function init() {
 function _init(i) {
 
 	createChart();
-	NN.dispose();
+	if (NN) NN.dispose();
 	NN = new NeuralNetwork([WIDTH * HEIGHT, i, WIDTH * HEIGHT]);
 	NN.init();
 
