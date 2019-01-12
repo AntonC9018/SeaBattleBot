@@ -127,9 +127,9 @@ function createChart() {
 }
 
 $(document).ready(function() {
-	createChart();
+	_init(30);
 
-	$('input').filter('.lr,.lm,.bs,.ep,.ts')
+	$('input').filter('.lr,.lm,.bs,.ep,.ts,.dp')
 		.on('input', function() {
 			$('span').filter('.' + $(this).attr('class').split(' ')[1])
 			.html($(this).val())
@@ -140,12 +140,21 @@ $(document).ready(function() {
 	$('input.bs').val(BATCH)	.on('input', function() { BATCH = 		parseFloat($(this).val()) })
 	$('input.ep').val(EPOCHS)	.on('input', function() { EPOCHS = 		parseFloat($(this).val()) })
 	$('input.ts').val(TESTS)	.on('input', function() { TESTS = 		parseFloat($(this).val()) })
+	$('input.dp').val(DP)			.on('input', function() { DP = 				parseFloat($(this).val()) })
+		.on('input', function () {
+			let diff = chart.data[0].dataPoints.length - DP;
+			if (diff > 0) {
+				let p = chart.data[0].dataPoints.splice(0, diff);
+				chart.axisX[0].set('minimum',  chart.data[0].dataPoints[0].x);
+			}
+		})
 
 	$('span.lr').html(LR)			.on('mouseout', function() { LR = 			parseFloat($(this).html()) })
 	$('span.lm').html(LAMBDA)	.on('mouseout', function() { LAMBDA = 	parseFloat($(this).html()) })
 	$('span.bs').html(BATCH)	.on('mouseout', function() { BATCH = 		parseFloat($(this).html()) })
 	$('span.ep').html(EPOCHS)	.on('mouseout', function() { EPOCHS = 	parseFloat($(this).html()) })
 	$('span.ts').html(TESTS)	.on('mouseout', function() { TESTS = 		parseFloat($(this).html()) })
+	$('span.dp').html(DP)			.on('mouseout', function() { DP = 			parseFloat($(this).html()) })
 
 	$('a.lr').on('click', function() { LR /= 2;			$('input.lr').val(LR);		 $('span.lr').html(LR.toFixed(6))	     })
 	$('a.lm').on('click', function() { LAMBDA /= 2;	$('input.lm').val(LAMBDA); $('span.lm').html(LAMBDA.toFixed(6))  })
@@ -162,10 +171,10 @@ function updateChart(dataPoint) {
 		chart.axisX[0].set('interval', 1);
 	} else {
 		chart.axisX[0].set('interval', 3);
-		if (int > 25) {
-			let p = chart.data[0].dataPoints.shift();
-			chart.axisX[0].set('minimum', p.x);
-		}
+	}
+	if (int > DP) {
+		let p = chart.data[0].dataPoints.shift();
+		chart.axisX[0].set('minimum', p.x);
 	}
 
 
