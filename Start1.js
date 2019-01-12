@@ -176,8 +176,8 @@ function updateChart(dataPoint) {
 		chart.axisX[0].set('interval', 3);
 	}
 	if (int > DP) {
-		let p = chart.data[0].dataPoints.shift();
-		chart.axisX[0].set('minimum', p.x);
+		chart.data[0].dataPoints.shift();
+		chart.axisX[0].set('minimum', chart.data[0].dataPoints[0].x);
 	}
 
 
